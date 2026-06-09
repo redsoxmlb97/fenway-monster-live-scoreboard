@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fenway Green Monster Scoreboard - Absolute Lock</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@800&display=swap" rel="stylesheet">
+   
+    <style>
+        :root {
+            --text-glow: #ffc44d;  
+            --ball-color: #00f3ff;   
+            --strike-color: #ff2e2e; 
+            --out-color: #ff2e2e;    
+        }
+
+        body {
+            background-color: #1a1a1a;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* --- THE PARENT FRAME --- */
+        #scoreboard {
+            position: relative; 
+            display: block;
+            width: 90vw;       
+            max-width: 1024px;   
+            aspect-ratio: 16 / 9; 
+            background-color: #2b4436; 
+            background-image: url('green-monster-bg.jpg'); 
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+            container-type: inline-size;
+        }
+
+        /* --- GLOBAL TEXT BASE (Shared Rules) --- */
+        .pitcher-container, 
+        #away-team-name, 
+        .line-score-grid {
+            font-family: 'Overpass', sans-serif;
+            font-weight: 800;
+            position: absolute; 
+            text-transform: uppercase;
+        }
+
+        /* --- PITCHER NUMBERS --- */
+        .away-pitcher {
+            top: 38%;         
+            left: 5.6%;      
+            font-size: 2.5cqw; 
+        }
+
+        .home-pitcher {
+            top: 48%;         
+            left: 5.6%;      
+            font-size: 2.5cqw;
+        }
+
+        /* --- TEAM NICKNAME --- */
+        /* --- TEAM NICKNAME --- */
+        #away-team-name {
+            top: 36.5%;       
+            left: 10.2%;       
+            font-size: 3cqw;
+            letter-spacing: 0.1cqw;
+            color: #fff;
+            box-sizing: border-box; /* Ensures borders/padding stay inside the fixed size */
+
+            background-color: #1e3327; /* Darker, recessed green steel */
+            box-shadow: inset 0 0 0.5cqw rgba(0,0,0,0.8), 0 0.1cqw 0.2cqw rgba(255,255,255,0.1);
+
+            /* --- LOCKED FIXED DIMENSIONS MATCHING THE HOME OVERLAY --- */
+            width: 16cqw;
+            height: 4cqw;
+
+            /* Flex Alignment to keep text centered inside the fixed box dimensions */
+            display: inline-flex;
+            align-items: center;      
+            justify-content: center;
+        }
+
+
+       #home-team-overlay-plate {
+            display: none; /* Hidden by default when playing at Fenway */
+            position: absolute;
+            box-sizing: border-box;
+        }
+    
+        /* --- LINE SCORE GRID SETUP --- */
+        .line-score-grid {
+            position: absolute;
+            top: 35.99%;       
+            left: 27.7%;      
+            width: 60.5%;     
+            display: flex;
+            flex-direction: column;
+            gap: .5cqw;      
+        }
+
+        /* 17 Exact Layout Tracks Across the Wall */
+        .line-score-grid .row {
+            display: grid;
+            grid-template-columns: 3.6cqw 3.9cqw 4.6cqw 2cqw 3.9cqw 3.99cqw 3.9cqw 2.4cqw 3.9cqw 4cqw 3.8cqw 2.3cqw 3.8cqw 4.6cqw 3.4cqw 9.5cqw;
+            text-align: center;
+        }
+
+        /* --- EXPLICIT POSITION ROUTING --- */
+        .line-score-grid .row > *:nth-child(4) { grid-column: 5; }
+        .line-score-grid .row > *:nth-child(5) { grid-column: 6; }
+        .line-score-grid .row > *:nth-child(6) { grid-column: 7; }
+
+        .line-score-grid .row > *:nth-child(7) { grid-column: 9; }
+        .line-score-grid .row > *:nth-child(8) { grid-column: 10; }
+        .line-score-grid .row > *:nth-child(9) { grid-column: 11; }
+
+        .line-score-grid .row > *:nth-child(10) { grid-column: 13; }
+
+        .line-score-grid .row > *:nth-child(11) { grid-column: 15; }
+        .line-score-grid .row > *:nth-child(12) { grid-column: 16; }
+        .line-score-grid .row > *:nth-child(13) { grid-column: 17; }
+
+        /* Font Sizing */
+        .line-score-grid .inn, 
+        .line-score-grid .stat {
+            font-size: 4cqw; 
+        }
+
+        /* Standard Color: Clean Stadium White */
+        .line-score-grid .inn {
+            color: #ffffff !important; 
+            text-shadow: 0 0 0.3cqw rgba(255, 255, 255, 0.6);
+        }
+
+        /* Total R-H-E Stats: Classic Warm Yellow/Amber Glow */
+        .line-score-grid .stat {
+             color: #ffffff !important; 
+            text-shadow: 0 0 0.3cqw rgba(255, 255, 255, 0.6);
+        }
+
+        /* Live Frame Active Color: Fenway Yellow */
+        .line-score-grid .inn.live-scoring {
+            color: #FFD500 !important; 
+            text-shadow: none !important;
+        }
+
+        /* --- AT BAT NUMBERS --- */
+        .batter-container {
+            position: absolute;
+            top: 71.8%;   
+            left: 8.3%;  
+            display: flex;
+            gap: 0.8cqw;     
+        }
+
+        .dot-matrix {
+            display: grid;
+            grid-template-columns: repeat(4, 0.68cqw); 
+            grid-template-rows: repeat(7, 0.68cqw);    
+            gap: 0.2cqw;                            
+            background: transparent;               
+        }
+
+        .dot {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: rgba(255, 196, 77, 0.25); 
+            transition: background-color 0.1s ease;
+        }
+
+        .dot.active {
+            background-color: var(--text-glow);
+            box-shadow: 0 0 0.6cqw var(--text-glow), 0 0 0.2cqw #ff8c00;
+        }
+
+        /* --- COUNT BLOCKS --- */
+        .count-block {
+            position: absolute;
+            top: 75.3%;      
+            height: 3.1cqw; 
+        }
+
+        .circle {
+            position: absolute; 
+            top: 0;
+            left: 0;
+            width: 3.1cqw;
+            height: 3.1cqw;
+            border-radius: 50%;
+            opacity: 0.3; 
+            transition: opacity 0.1s ease; 
+        }
+
+        .circle.active { opacity: 1; }
+        .circle:nth-child(1) { transform: translateX(0px); }
+        
+        #balls-container { left: 21.3%; width: 1.7%; }
+        #balls-container .circle:nth-child(2) { transform: translateX(4.9cqw); } 
+        #balls-container .circle:nth-child(3) { transform: translateX(9.9cqw); }   
+        #balls-container .circle { background-color: var(--ball-color); }
+
+        #strikes-container { left: 41.8%; width: 7.8%; }
+        #strikes-container .circle:nth-child(2) { transform: translateX(4.4cqw); } 
+        #strikes-container .circle { background-color: var(--strike-color); }
+
+        #outs-container { left: 55.8%; width: 7.8%; }
+        #outs-container .circle:nth-child(2) { transform: translateX(5.1cqw); } 
+        #outs-container .circle { background-color: var(--out-color); }
+    </style>
+</head>
+<body>
+
+    <div id="scoreboard">
+        <div class="batter-container">
+            <div id="digit1" class="dot-matrix"></div>
+            <div id="digit2" class="dot-matrix"></div>
+        </div>
+
+        <div class="count-block" id="balls-container">
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle"></div>
+        </div>
+
+        <div class="count-block" id="strikes-container">
+            <div class="circle"></div>
+            <div class="circle"></div>
+        </div>
+
+        <div class="count-block" id="outs-container">
+            <div class="circle"></div>
+            <div class="circle"></div>
+        </div>
+
+        <div class="pitcher-container away-pitcher" id="away-pitcher-number">00</div>
+        <div class="pitcher-container home-pitcher" id="home-pitcher-number">00</div>
+
+        <div id="away-team-name">RED SOX</div>
+        <div id="home-team-overlay-plate"></div>
+
+        <div class="line-score-grid">
+            <div class="row away-line">
+                <div class="inn"></div><div class="inn"></div><div class="inn"></div> 
+                <div class="inn"></div><div class="inn"></div><div class="inn"></div> 
+                <div class="inn"></div><div class="inn"></div><div class="inn"></div> 
+                <div class="inn" id="away-inn-10"></div> 
+                <div class="stat total-runs"></div>
+                <div class="stat total-hits"></div>
+                <div class="stat total-errors"></div>
+            </div>
+            
+            <div class="row home-line">
+                <div class="inn"></div><div class="inn"></div><div class="inn"></div> 
+                <div class="inn"></div><div class="inn"></div><div class="inn"></div> 
+                <div class="inn"></div><div class="inn"></div><div class="inn"></div> 
+                <div class="inn" id="home-inn-10"></div> 
+                <div class="stat total-runs"></div>
+                <div class="stat total-hits"></div>
+                <div class="stat total-errors"></div>
+            </div>
+        </div>
+    </div>
+
+            <script>
+            // --- 1. GLOBAL CORE DICTIONARIES ---
+            const fontMatrix = {
+                0: [1,1,1,1, 1,0,0,1, 1,0,0,1, 1,0,0,1, 1,0,0,1, 1,0,0,1, 1,1,1,1],
+                1: [0,0,0,1, 0,0,0,1, 0,0,0,1, 0,0,0,1, 0,0,0,1, 0,0,0,1, 0,0,0,1],
+                2: [1,1,1,1, 0,0,0,1, 0,0,0,1, 0,1,1,1, 1,0,0,0, 1,0,0,0, 1,1,1,1],
+                3: [1,1,1,1, 0,0,0,1, 0,0,0,1, 0,1,1,1, 0,0,0,1, 0,0,0,1, 1,1,1,1],
+                4: [1,0,0,1, 1,0,0,1, 1,0,0,1, 1,1,1,1, 0,0,0,1, 0,0,0,1, 0,0,0,1],
+                5: [1,1,1,1, 1,0,0,0, 1,0,0,0, 1,1,1,1, 0,0,0,1, 0,0,0,1, 1,1,1,1],
+                6: [1,1,1,1, 1,0,0,0, 1,0,0,0, 1,1,1,1, 1,0,0,1, 1,0,0,1, 1,1,1,1],
+                7: [1,1,1,1, 0,0,0,1, 0,0,0,1, 0,0,0,1, 0,0,0,1, 0,0,0,1, 0,0,0,1],
+                8: [1,1,1,1, 1,0,0,1, 1,0,0,1, 1,1,1,1, 1,0,0,1, 1,0,0,1, 1,1,1,1],
+                9: [1,1,1,1, 1,0,0,1, 1,0,0,1, 1,1,1,1, 0,0,0,1, 0,0,0,1, 1,1,1,1],
+                ' ': [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0]
+            };
+
+            const fenwayTeamCodes = {
+                "Boston Red Sox": "RED SOX",
+                "New York Yankees": "YANKEES",
+                "Baltimore Orioles": "ORIOLES",
+                "Toronto Blue Jays": "TORONTO",
+                "Tampa Bay Rays": "RAYS",
+            };
+
+            // --- 2. CORE UTILITY FUNCTIONS ---
+            function createMatrixGrid(elementId) {
+                const container = document.getElementById(elementId);
+                if (!container) return;
+                container.innerHTML = ''; 
+                for (let i = 0; i < 28; i++) {
+                    const dot = document.createElement('div');
+                    dot.classList.add('dot');
+                    container.appendChild(dot);
+                }
+            }
+
+            function renderDigit(elementId, value) {
+                const container = document.getElementById(elementId);
+                if (!container) return;
+                const dots = container.querySelectorAll('.dot');
+                const matrixMap = fontMatrix[value] || fontMatrix[' '];
+
+                dots.forEach((dot, index) => {
+                    if (matrixMap[index] === 1) {
+                        dot.className = 'dot active';
+                    } else {
+                        dot.className = 'dot';
+                    }
+                });
+            }
+
+            function updateBatterDisplay(number) {
+                const numStr = number.toString().padStart(2, ' ');
+                renderDigit('digit1', numStr[0]);
+                renderDigit('digit2', numStr[1]);
+            }
+
+            function updateCountRow(containerId, count) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                const circles = container.querySelectorAll('.circle');
+                circles.forEach((circle, index) => {
+                    if (index < count) {
+                        circle.classList.add('active');
+                    } else {
+                        circle.classList.remove('active');
+                    }
+                });
+            }
+
+            function formatFenwayScore(runs, isActiveInning) {
+                if (isActiveInning) {
+                    if (runs > 0) return runs === 1 ? "I" : runs;
+                    return ""; 
+                } else {
+                    if (runs !== undefined && runs !== null && runs !== "") {
+                        return runs === 1 ? "I" : runs;
+                    }
+                    return ""; 
+                }
+            }
+
+                // --- 3. THE VISUAL RENDER ENGINE ---
+                window.updateScoreboard = function(data) {
+                    updateBatterDisplay(data.batterNumber);
+                    updateCountRow('balls-container', data.balls);
+                    updateCountRow('strikes-container', data.strikes);
+                    updateCountRow('outs-container', data.outs);
+
+                    // Pitcher Number Font Processing
+                    if (data.awayPitcherNumber !== undefined && data.awayPitcherNumber !== null) {
+                        const awayPitcherStr = data.awayPitcherNumber.toString();
+                        const awayPitcherElem = document.getElementById('away-pitcher-number');
+                        if (awayPitcherElem) awayPitcherElem.textContent = awayPitcherStr.replaceAll('1', 'I');
+                    }
+                    if (data.homePitcherNumber !== undefined && data.homePitcherNumber !== null) {
+                        const homePitcherStr = data.homePitcherNumber.toString();
+                        const homePitcherElem = document.getElementById('home-pitcher-number');
+                        if (homePitcherElem) homePitcherElem.textContent = homePitcherStr.replaceAll('1', 'I');
+                    }
+
+                    const awayPlates = document.querySelectorAll('.away-line .inn');
+                    const homePlates = document.querySelectorAll('.home-line .inn');
+
+                    for (let i = 0; i < 10; i++) {
+                        const inningNum = i + 1;
+
+                        // --- AWAY GRID RENDER ---
+                        const awayRuns = data.awayInnings ? data.awayInnings[i] : undefined; 
+                        const isAwayActive = (inningNum === data.currentInning && data.isTopInning && !data.isHalfInningOver && !data.isGameFinal);
+
+                        if (awayPlates[i]) {
+                            if (isAwayActive) {
+                                awayPlates[i].textContent = formatFenwayScore(awayRuns, true);
+                                if (awayRuns !== "" && awayRuns !== undefined && awayRuns !== null) {
+                                    awayPlates[i].classList.add('live-scoring');
+                                }
+                            } else {
+                                awayPlates[i].classList.remove('live-scoring');
+                                if (typeof awayRuns === 'number' || (awayRuns !== undefined && awayRuns !== "")) {
+                                    const numericVal = parseInt(awayRuns, 10);
+                                    awayPlates[i].textContent = numericVal === 1 ? "I" : (isNaN(numericVal) ? "" : numericVal);
+                                } else {
+                                    awayPlates[i].textContent = "";
+                                }
+                            }
+                        }
+
+                        // --- HOME GRID RENDER ---
+                        const homeRuns = data.homeInnings ? data.homeInnings[i] : undefined;
+                        const isHomeActive = (inningNum === data.currentInning && !data.isTopInning && !data.isHalfInningOver && !data.isGameFinal);
+
+                        if (homePlates[i]) {
+                            if (isHomeActive) {
+                                homePlates[i].textContent = formatFenwayScore(homeRuns, true);
+                                if (homeRuns !== "" && homeRuns !== undefined && homeRuns !== null) {
+                                    homePlates[i].classList.add('live-scoring');
+                                }
+                            } else {
+                                homePlates[i].classList.remove('live-scoring');
+                                if (typeof homeRuns === 'number' || (homeRuns !== undefined && homeRuns !== "")) {
+                                    if (homeRuns === "") {
+                                        homePlates[i].textContent = "";
+                                    } else {
+                                        const numericVal = parseInt(homeRuns, 10);
+                                        homePlates[i].textContent = numericVal === 1 ? "I" : (isNaN(numericVal) ? "" : numericVal);
+                                    }
+                                } else {
+                                    homePlates[i].textContent = "";
+                                }
+                            }
+                        }
+                    }
+
+                    // --- TOTALS (R-H-E) HIGHLIGHTING ---
+                    const currentInningIdx = data.currentInning - 1;
+                    
+                    const isAwayLiveScoring = data.awayInnings && 
+                                            (data.awayInnings[currentInningIdx] > 0) && 
+                                            data.isTopInning && 
+                                            !data.isHalfInningOver &&
+                                            !data.isGameFinal;
+
+                    const isHomeLiveScoring = data.homeInnings && 
+                                            (data.homeInnings[currentInningIdx] > 0) && 
+                                            !data.isTopInning && 
+                                            !data.isHalfInningOver &&
+                                            !data.isGameFinal;
+
+                    // Update Away Totals
+                    if (data.awayTotal) {
+                        const awayRunsElement = document.querySelector('.away-line .total-runs');
+                        const awayHitsElement = document.querySelector('.away-line .total-hits');
+                        const awayErrorsElement = document.querySelector('.away-line .total-errors');
+
+                        if (awayRunsElement && awayHitsElement && awayErrorsElement) {
+                            awayRunsElement.textContent = parseInt(data.awayTotal.runs, 10) === 1 ? "I" : (data.awayTotal.runs ?? 0);
+                            awayHitsElement.textContent = parseInt(data.awayTotal.hits, 10) === 1 ? "I" : (data.awayTotal.hits ?? 0);
+                            awayErrorsElement.textContent = parseInt(data.awayTotal.errors, 10) === 1 ? "I" : (data.awayTotal.errors ?? 0);
+
+                            const awayStats = [awayRunsElement, awayHitsElement, awayErrorsElement];
+                            awayStats.forEach(el => {
+                                if (isAwayLiveScoring) el.classList.add('live-scoring');
+                                else el.classList.remove('live-scoring');
+                            });
+                        }
+                    }
+
+                    // Update Home Totals
+                    if (data.homeTotal) {
+                        const homeRunsElement = document.querySelector('.home-line .total-runs');
+                        const homeHitsElement = document.querySelector('.home-line .total-hits');
+                        const homeErrorsElement = document.querySelector('.home-line .total-errors');
+
+                        if (homeRunsElement && homeHitsElement && homeErrorsElement) {
+                            homeRunsElement.textContent = parseInt(data.homeTotal.runs, 10) === 1 ? "I" : (data.homeTotal.runs ?? 0);
+                            homeHitsElement.textContent = parseInt(data.homeTotal.hits, 10) === 1 ? "I" : (data.homeTotal.hits ?? 0);
+                            homeErrorsElement.textContent = parseInt(data.homeTotal.errors, 10) === 1 ? "I" : (data.homeTotal.errors ?? 0);
+
+                            const homeStats = [homeRunsElement, homeHitsElement, homeErrorsElement];
+                            homeStats.forEach(el => {
+                                if (isHomeLiveScoring) el.classList.add('live-scoring');
+                                else el.classList.remove('live-scoring');
+                            });
+                        }
+                    }
+                };
+
+            // --- 4. DATA FETCHING LAYER ---
+            async function fetchLiveMLBData() {
+                try {
+                    const response = await fetch('https://statsapi.mlb.com/api/v1/schedule/games/?sportId=1');
+                    const data = await response.json();
+                    
+                    const dates = data.dates;
+                    if (!dates || dates.length === 0) {
+                        console.log("No MLB games scheduled for today.");
+                        return;
+                    }
+
+                    let targetGame = null;
+                    for (const date of dates) {
+                        targetGame = date.games.find(game => 
+                            game.teams.away.team.name === "Boston Red Sox" || 
+                            game.teams.home.team.name === "Boston Red Sox"
+                        );
+                        if (targetGame) break;
+                    }
+
+                    if (!targetGame) {
+                        console.log("Red Sox are not playing today.");
+                        return;
+                    }
+
+                    const gamePk = targetGame.gamePk;
+                    const liveResponse = await fetch(`https://statsapi.mlb.com/api/v1/game/${gamePk}/linescore`);
+                    const linescore = await liveResponse.json();
+                    const boxscoreResponse = await fetch(`https://statsapi.mlb.com/api/v1/game/${gamePk}/boxscore`);
+                    const boxscore = await boxscoreResponse.json();
+
+                    // Safe Pitcher Extraction
+                    let awayPitcherNum = "00";
+                    let homePitcherNum = "00";
+
+                    const awayPlayers = boxscore.teams?.away?.players;
+                    const homePlayers = boxscore.teams?.home?.players;
+
+                    const rawAwayPitcherId = linescore.away?.pitcher?.id || boxscore.teams?.away?.pitchers?.[0];
+                    const rawHomePitcherId = linescore.home?.pitcher?.id || boxscore.teams?.home?.pitchers?.[0];
+
+                    if (awayPlayers && rawAwayPitcherId) {
+                        awayPitcherNum = awayPlayers[`ID${rawAwayPitcherId}`]?.jerseyNumber || "00";
+                    }
+                    if (homePlayers && rawHomePitcherId) {
+                        homePitcherNum = homePlayers[`ID${rawHomePitcherId}`]?.jerseyNumber || "00";
+                    }
+
+                    // Safe Batter Extraction
+                    let activeBatterNum = " ";
+                    const isTop = linescore.isTopInning ?? true;
+                    const currentBatterId = boxscore.teams?.[isTop ? 'away' : 'home']?.status?.currentBatter;
+                    
+                    if (currentBatterId) {
+                        const activeTeamPlayers = boxscore.teams?.[isTop ? 'away' : 'home']?.players;
+                        activeBatterNum = activeTeamPlayers?.[`ID${currentBatterId}`]?.jerseyNumber || " ";
+                    }
+
+                    // Global final state flag extraction
+                    const isGameFinal = targetGame.status?.abstractGameState === "Final" || linescore.currentInning > 9 || targetGame.status?.codedGameState === "F";
+
+                    // --- BULLETPROOF INNING ARRAY MAPPING LOOP ---
+                    const safeAwayInnings = [];
+                    const safeHomeInnings = [];
+
+                    for (let idx = 0; idx < 10; idx++) {
+                        const inningData = linescore.innings?.[idx];
+                        
+                        if (inningData) {
+                            // Away parsing
+                            let awayRunVal = (inningData.away && typeof inningData.away.runs === 'number') ? inningData.away.runs : "";
+                            if (awayRunVal === "" && isGameFinal) awayRunVal = 0;
+                            safeAwayInnings.push(awayRunVal);
+
+                            // Home parsing
+                            let homeRunVal = (inningData.home && typeof inningData.home.runs === 'number') ? inningData.home.runs : "";
+                            if (homeRunVal === "" && isGameFinal) {
+                                if (idx === 8) {
+                                    homeRunVal = ""; // Keep the bottom of the 9th empty if unplayed
+                                } else {
+                                    homeRunVal = 0;
+                                }
+                            }
+                            safeHomeInnings.push(homeRunVal);
+                        } else {
+                            // Explicit array appending for final frame edge cases
+                            if (idx === 8 && isGameFinal) {
+                                safeAwayInnings.push(0);
+                                safeHomeInnings.push("");
+                            } else {
+                                safeAwayInnings.push(undefined);
+                                safeHomeInnings.push(undefined);
+                            }
+                        }
+                    }
+
+                    const formattedData = {
+                        currentInning: linescore.currentInning ?? 1,
+                        isTopInning: isTop,
+                        isHalfInningOver: linescore.inningHalf === "End" || linescore.inningHalf === "Middle",
+                        isGameFinal: isGameFinal,
+                        
+                        awayInnings: safeAwayInnings,
+                        homeInnings: safeHomeInnings,
+                        
+                        awayTotal: {
+                            runs: linescore.teams?.away?.runs ?? 0,
+                            hits: linescore.teams?.away?.hits ?? 0,
+                            errors: linescore.teams?.away?.errors ?? 0
+                        },
+                        homeTotal: {
+                            runs: linescore.teams?.home?.runs ?? 0,
+                            hits: linescore.teams?.home?.hits ?? 0,
+                            errors: linescore.teams?.home?.errors ?? 0
+                        },
+                        
+                        balls: linescore.balls ?? 0,
+                        strikes: linescore.strikes ?? 0,
+                        outs: linescore.outs ?? 0,
+                        
+                        batterNumber: activeBatterNum,
+                        awayPitcherNumber: awayPitcherNum,
+                        homePitcherNumber: homePitcherNum
+                    };
+
+                    // --- 8. BULLETPROOF PHYSICAL OVERLAY PLATE CONTROLLER ---
+                    // --- 8. BULLETPROOF PHYSICAL OVERLAY PLATE CONTROLLER ---
+                    const homeTeamRaw = targetGame.teams.home.team.name;
+                    const awayTeamNameRaw = targetGame.teams.away.team.name; // Defined safely for fallback structure
+                    
+                    const awayPlate = document.getElementById('away-team-name');
+                    const homeOverlayPlate = document.getElementById('home-team-overlay-plate');
+
+                    if (awayPlate && homeOverlayPlate) {
+                        // SCENARIO A: Red Sox are HOME
+                        if (homeTeamRaw === "Boston Red Sox") {
+                            awayPlate.textContent = fenwayTeamCodes[awayTeamNameRaw] || awayTeamNameRaw.toUpperCase();
+                            
+                            // Hide the overlay completely when at Fenway
+                            homeOverlayPlate.style.display = "none";
+                            homeOverlayPlate.textContent = "";
+                        } 
+                        // SCENARIO B: Red Sox are AWAY
+                        else {
+                            // Top row plate locks onto RED SOX
+                            awayPlate.textContent = "RED SOX";
+                            
+                            // Populate the opponent name text
+                            homeOverlayPlate.textContent = fenwayTeamCodes[homeTeamRaw] || homeTeamRaw.toUpperCase();
+                            
+                            // --- FORCE PLATING AND STYLES INLINE ---
+                            homeOverlayPlate.style.display = "inline-flex";
+                            homeOverlayPlate.style.alignItems = "center";
+                            homeOverlayPlate.style.justifyContent = "center";
+                            
+                            // Lettering Styles matched to parent specifications
+                            homeOverlayPlate.style.color = "#fff"; 
+                            homeOverlayPlate.style.fontFamily = "'Overpass', sans-serif";
+                            homeOverlayPlate.style.fontSize = "3cqw";
+                            homeOverlayPlate.style.fontWeight = "800";
+                            homeOverlayPlate.style.letterSpacing = "0.1cqw";
+                            homeOverlayPlate.style.textTransform = "uppercase";
+                            
+                            // --- THE PHYSICAL PLATE CONSTRUCTION ---
+                            homeOverlayPlate.style.backgroundColor = "#1e3327"; // Dark recessed green matching your away plate
+                            homeOverlayPlate.style.border = "none";
+                            homeOverlayPlate.style.padding = "0.2cqw 1.2cqw";
+                            homeOverlayPlate.style.boxShadow = "inset 0 0 0.5cqw rgba(0,0,0,0.8), 0 0.1cqw 0.2cqw rgba(255,255,255,0.1)";
+                            
+                            // --- LUSH RESPONSIVE SCALING SIZE & POSITION ---
+                            // Since your away plate is left: 10.2%, we lock this to 10.2%
+                            homeOverlayPlate.style.left = "10.2%";     
+                            
+                            // Match your width constraints to the exact scale layout footprint
+                            homeOverlayPlate.style.width = "16cqw";
+                            homeOverlayPlate.style.height = "4cqw";
+                            
+                            // Drop it straight down onto your background's Home Team slot line tracking
+                            homeOverlayPlate.style.top = "46.5%";    
+                            homeOverlayPlate.style.zIndex = "999";    
+                        }
+                    }
+
+                    window.updateScoreboard(formattedData);
+
+                } catch (error) {
+                    console.error("Error pulling live MLB data feed: ", error);
+                }
+            }
+
+            // --- 5. INITIALIZATION RUNNER ---
+            document.addEventListener('DOMContentLoaded', () => {
+                createMatrixGrid('digit1');
+                createMatrixGrid('digit2');
+
+                fetchLiveMLBData();
+                setInterval(fetchLiveMLBData, 30000);
+            });
+        </script>
+        </body>
+        </html>
