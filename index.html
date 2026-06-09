@@ -396,7 +396,20 @@
                 return ""; 
             }
         }
-
+        window.stylePlate = function(element, text) {
+            element.textContent = text;
+            // Core Layout
+            element.style.display = "inline-flex";
+            element.style.alignItems = "center";
+            element.style.justifyContent = "center";
+            element.style.whiteSpace = "nowrap";
+            // Font Sizing using clamp to prevent "bursting"
+            element.style.fontSize = "2.8cqw";
+            element.style.fontFamily = "'Overpass', sans-serif";
+            element.style.fontWeight = "800";
+            element.style.textTransform = "uppercase";
+            element.style.backgroundColor = "#1e3327";
+        };
         // --- 3. THE VISUAL RENDER ENGINE ---
         window.updateScoreboard = function(data) {
             updateBatterDisplay(data.batterNumber);
